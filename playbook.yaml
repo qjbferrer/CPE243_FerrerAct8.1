@@ -1,0 +1,28 @@
+- hosts: all
+  gather_facts: true
+  become: yes
+  become_user: root
+
+  tasks:
+    - name: Collect PCAP from control node
+      fetch:
+        src: /home/qjbferrer/controlnode.pcap
+        dest: /home/qjbferrer/CPE243_FerrerAct8.1/PcapInput/
+        flat: yes
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Extract executable PCAP from input folder
+      command: "tcpflow -r /home/qjbferrer/CPE243_FerrerAct8.1/PcapInput/controlnode.pcap -o /home/qjbferrer/CPE243_FerrerAct8.1/PcapOutput/"
+      args:
+        creates: /home/qjbferrer/CPE243_FerrerAct8.1/PcapOutput/controlnode.exe
+
+    - name: Show the output of PCAP file
+      command: "cat /home/qjbferrer/CPE243_FerrerAct8.1/PcapOutput/report.xml"
+      register: cat_output
+      changed_when: false
+
+    - debug:
+        var: cat_output.stdout_lines
